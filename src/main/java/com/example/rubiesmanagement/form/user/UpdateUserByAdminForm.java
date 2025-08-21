@@ -1,10 +1,7 @@
 package com.example.rubiesmanagement.form.user;
 
 import com.example.rubiesmanagement.enums.Role;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -29,4 +26,8 @@ public class UpdateUserByAdminForm {
     private String phone;
 
     private Role role;
+
+    @NotNull(message = "Trạng thái hoạt động không được để trống")
+    private Boolean active;
+    private Boolean removeAvatar;
 }

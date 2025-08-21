@@ -32,4 +32,5 @@ public class User {
     private Role role = Role.CUSTOMER;
 
     private boolean active = true;
+
 }

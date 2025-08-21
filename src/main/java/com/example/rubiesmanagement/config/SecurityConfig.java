@@ -1,7 +1,6 @@
 package com.example.rubiesmanagement.config;
 
 import com.example.rubiesmanagement.security.JwtAuthenticationFilter;
-import com.example.rubiesmanagement.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,7 +12,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -28,11 +26,17 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthFilter;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .cors() // Bật CORS để tích hợp với WebConfig
+                .and()
                 .authorizeHttpRequests(auth -> auth
+                        // Permit tất cả request OPTIONS mà không cần xác thực
+                        .requestMatchers("/uploads/**").permitAll() // cho phép tất cả truy cập ảnh
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
                         // Permit các endpoint không cần login
                         .requestMatchers(
                                 "/api/v1/users/login",
@@ -54,7 +58,8 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.PUT,
                                 "/api/v1/users/reset-password",
-                                "/api/v1/users/profile"
+                                "/api/v1/users/profile",
+                                "api/v1/users/change-password"
                         ).permitAll()
 
                         // ADMIN thêm, sửa, xóa
@@ -70,8 +75,14 @@ public class SecurityConfig {
                                 "/api/v1/colors/**",
                                 "/api/v1/categories/**"
                         ).hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/v1/users/me").authenticated()
 
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/v1/users/me"
+                        ).authenticated()
+
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/v1/users/**"
+                        ).hasRole("ADMIN")
                         // Còn lại cần login
                         .anyRequest().authenticated()
                 )

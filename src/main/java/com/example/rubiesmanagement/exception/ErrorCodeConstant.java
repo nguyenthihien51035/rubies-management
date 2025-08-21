@@ -11,6 +11,8 @@ public class ErrorCodeConstant {
     public static final String PHONE_ALREADY_EXISTS = "400107";
     public static final String INVALID_PASSWORD = "400108";
     public static final String INVALID_OTP = "400109";
+    public static final String OLD_PASSWORD_IS_INCORRECT = "400110";
+    public static final String USER_IS_NOT_LOGIN = "400110";
     public static final String USER_INACTIVE = "400010"; // Tài khoản bị khoá
 
 

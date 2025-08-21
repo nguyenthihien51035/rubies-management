@@ -3,6 +3,8 @@ package com.example.rubiesmanagement.controller;
 import com.example.rubiesmanagement.dto.ApiResponse;
 import com.example.rubiesmanagement.dto.response.UserResponse;
 import com.example.rubiesmanagement.form.user.*;
+import com.example.rubiesmanagement.service.EmailService;
+import com.example.rubiesmanagement.service.ForgotPasswordService;
 import com.example.rubiesmanagement.service.UserService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -20,6 +22,8 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("api/v1/users")
 public class UserController {
     public final UserService userService;
+    public final EmailService emailService;
+    private final ForgotPasswordService forgotPasswordService;
 
     @PostMapping()
     public ResponseEntity<ApiResponse> register(
@@ -69,9 +73,40 @@ public class UserController {
     }
 
     @PutMapping("/profile")
-    public ResponseEntity<ApiResponse> updateProfile(@Valid @RequestBody UpdateUserForm form, Authentication authentication) {
+    public ResponseEntity<ApiResponse> updateProfile(@Valid @ModelAttribute UpdateUserForm form, Authentication authentication) {
         String email = authentication.getName();
         UserResponse response = userService.updateProfile(email, form);
         return ResponseEntity.ok(new ApiResponse("Cập nhật thông tin thành công", response));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse> deleteUser(@PathVariable Integer id) {
+        userService.deleteUser(id);
+        return ResponseEntity.ok(new ApiResponse("Xóa người dùng thành công", null));
+    }
+
+    @GetMapping("filter")
+    public ResponseEntity<ApiResponse> filterUser(FilterUserForm filterUserForm) {
+        Page<UserResponse> page = userService.filterUser(filterUserForm);
+        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse("Thành công", page));
+    }
+
+    @PutMapping("/change-password")
+    public ResponseEntity<ApiResponse> changePassword(Authentication authentication, @Valid @RequestBody ChangePasswordForm form
+    ) {
+        UserResponse response = userService.changePassword(authentication, form);
+        return ResponseEntity.ok(new ApiResponse("Đổi mật khẩu thành công", response));
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse> forgotPassword(@Valid @RequestBody ForgotPasswordForm form) {
+        forgotPasswordService.sendOtp(form);
+        return ResponseEntity.ok(new ApiResponse("Đã gửi mã OTP qua email", null));
+    }
+
+    @PutMapping("/reset-password")
+    public ResponseEntity<ApiResponse> resetPassword(@RequestBody ResetPasswordForm form) {
+        forgotPasswordService.resetPassword(form);
+        return ResponseEntity.ok(new ApiResponse("Đặt lại mật khẩu thành công", null));
     }
 }
