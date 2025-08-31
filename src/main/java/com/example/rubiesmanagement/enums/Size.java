@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum Size {
-    XS, S, M, L, XL, XXL;
+    XS, S, M, L, XL, XXL, FreeSize;
 
     @JsonCreator
     public static Size from(String value) {

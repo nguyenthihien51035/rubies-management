@@ -11,6 +11,7 @@ import com.example.rubiesmanagement.repository.OtpTokenRepository;
 import com.example.rubiesmanagement.repository.UserRepository;
 import com.example.rubiesmanagement.service.ForgotPasswordService;
 import jakarta.transaction.Transactional;
+import lombok.AllArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,18 +21,12 @@ import java.time.LocalDateTime;
 import java.util.Random;
 
 @Service
+@AllArgsConstructor
 public class ForgotPasswordImpl implements ForgotPasswordService {
     private final UserRepository userRepository;
     private final OtpTokenRepository otpTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JavaMailSender mailSender;
-
-    public ForgotPasswordImpl(UserRepository userRepository, OtpTokenRepository otpTokenRepository, PasswordEncoder passwordEncoder, JavaMailSender mailSender) {
-        this.userRepository = userRepository;
-        this.otpTokenRepository = otpTokenRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.mailSender = mailSender;
-    }
 
     @Override
     public void sendOtp(ForgotPasswordForm form) {

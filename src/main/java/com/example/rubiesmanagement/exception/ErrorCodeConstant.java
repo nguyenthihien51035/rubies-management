@@ -14,6 +14,10 @@ public class ErrorCodeConstant {
     public static final String OLD_PASSWORD_IS_INCORRECT = "400110";
     public static final String USER_IS_NOT_LOGIN = "400110";
     public static final String USER_INACTIVE = "400010"; // Tài khoản bị khoá
+    public static final String INVALID_FILE_TYPE = "400011";
+    public static final String DUPLICATE_SKU = "400101";
+
+
 
 
     //401 - UNAUTHORIED
@@ -30,7 +34,6 @@ public class ErrorCodeConstant {
     public static final String USER_NOT_FOUND = "404104";
 
     //409 - CONFLICT
-    public static final String DUPLICATE_SKU = "409101";
     public static final String DUPLICATE_CATEGORY_NAME = "409102";
 
     // 500 - SERVER ERROR
@@ -38,4 +41,5 @@ public class ErrorCodeConstant {
 
 
     public static final String FILE_UPLOAD_FAILED = "FILE_UPLOAD_FAILED";
+    public static final String VARIANT_NOT_FOUND_BY_ID = "404105";
 }

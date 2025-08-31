@@ -32,6 +32,9 @@ public class Product {
     @Column(name = "in_stock")
     private Boolean inStock = true;
 
+    @Column(name = "main_image_url")
+    private String mainImageUrl;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private Category category;

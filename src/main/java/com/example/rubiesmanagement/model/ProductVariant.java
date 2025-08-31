@@ -5,6 +5,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @Setter
@@ -17,7 +20,8 @@ public class ProductVariant {
 
     private Integer quantity;
 
-    private String variantImageUrl;
+    @Column(name = "variant_image_url")
+    private String variantMainImageUrl;
 
     @Enumerated(EnumType.STRING)
     private Size size;
@@ -29,4 +33,9 @@ public class ProductVariant {
     @ManyToOne
     @JoinColumn(name = "color_id", nullable = false)
     private Color color;
+
+    // 1 variant có nhiều ảnh
+    @OneToMany(mappedBy = "variant", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductImage> images = new ArrayList<>();
+
 }

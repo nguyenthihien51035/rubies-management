@@ -52,7 +52,6 @@ public class SecurityConfig {
                         ).permitAll()
 
                         .requestMatchers(HttpMethod.POST,
-                                "/api/v1/products/filter",
                                 "/api/v1/users/forgot-password"
                         ).permitAll()
 
@@ -68,6 +67,12 @@ public class SecurityConfig {
                                 "/api/v1/colors/**",
                                 "/api/v1/categories/**",
                                 "/api/v1/users/**"
+                        ).hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/v1/categories/**",
+                                "/api/v1/products/**",
+                                "/api/v1/colors/**"
                         ).hasRole("ADMIN")
 
                         .requestMatchers(HttpMethod.DELETE,
