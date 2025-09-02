@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -15,6 +16,8 @@ public class ProductResponse {
     private BigDecimal price;
     private BigDecimal discountPrice;
     private Boolean inStock;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
     private CategoryResponse category;
 
     private List<ProductVariantResponse> variants;

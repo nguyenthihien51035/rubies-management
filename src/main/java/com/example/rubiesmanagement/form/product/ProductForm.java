@@ -1,6 +1,5 @@
 package com.example.rubiesmanagement.form.product;
 
-import com.example.rubiesmanagement.model.Category;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;

@@ -18,8 +18,6 @@ public class ErrorCodeConstant {
     public static final String DUPLICATE_SKU = "400101";
 
 
-
-
     //401 - UNAUTHORIED
     public static final String INVALID_LOGIN_CREDENTIALS = "401001"; // Thông tin đăng nhập không chính xác
 

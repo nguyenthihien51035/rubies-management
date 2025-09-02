@@ -14,6 +14,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @AllArgsConstructor
 @RequestMapping("api/v1/products")
@@ -51,6 +53,18 @@ public class ProductController {
     public ResponseEntity<ApiResponse> filterProducts(@ModelAttribute FilterProductForm filter) {
         Page<FilterProductResponse> page = productService.filterProducts(filter);
         return ResponseEntity.ok(new ApiResponse("Lọc sản phẩm thành công", page));
+    }
+
+    @GetMapping("/category/{categoryId}")
+    public ResponseEntity<ApiResponse> getProductsByCategory(@PathVariable Integer categoryId) {
+        List<ProductResponse> products = productService.getProductsByCategory(categoryId);
+        return ResponseEntity.ok(new ApiResponse("Lấy sản phẩm theo category thành công", products));
+    }
+
+    @GetMapping("/top4-newest")
+    public ResponseEntity<ApiResponse> getTop4NewestProducts() {
+        List<ProductResponse> products = productService.getTop4NewestProducts();
+        return ResponseEntity.ok(new ApiResponse("Lấy top 4 sản phẩm mới nhất thành công", products));
     }
 
 }

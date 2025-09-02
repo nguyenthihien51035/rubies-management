@@ -28,6 +28,7 @@ public class CategoryController {
         CategoryResponse created = categoryService.createCategory(form);
         return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("Tạo danh mục thành công", created));
     }
+
     @PutMapping(value = "/{id}")
     public ResponseEntity<ApiResponse> updateCategory(
             @PathVariable Integer id,
@@ -35,6 +36,7 @@ public class CategoryController {
         CategoryResponse response = categoryService.updateCategory(id, form);
         return ResponseEntity.ok(new ApiResponse("Cập nhật danh mục thành công", response));
     }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse> deleteCategory(@PathVariable Integer id) {
         categoryService.deleteCategory(id);

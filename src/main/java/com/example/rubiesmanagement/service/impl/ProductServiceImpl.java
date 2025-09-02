@@ -8,8 +8,11 @@ import com.example.rubiesmanagement.form.product.FilterProductForm;
 import com.example.rubiesmanagement.form.product.ProductForm;
 import com.example.rubiesmanagement.form.product.ProductImageForm;
 import com.example.rubiesmanagement.form.product.ProductVariantForm;
+import com.example.rubiesmanagement.mapper.ProductMapper;
 import com.example.rubiesmanagement.model.*;
-import com.example.rubiesmanagement.repository.*;
+import com.example.rubiesmanagement.repository.CategoryRepository;
+import com.example.rubiesmanagement.repository.ColorRepository;
+import com.example.rubiesmanagement.repository.ProductRepository;
 import com.example.rubiesmanagement.repository.specification.ProductSpecification;
 import com.example.rubiesmanagement.service.FileStorageService;
 import com.example.rubiesmanagement.service.ProductService;
@@ -20,12 +23,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -217,10 +220,6 @@ public class ProductServiceImpl implements ProductService {
         // Cập nhật images của variant
         if (variantForm.getImages() != null) {
             updateVariantImages(variant, variantForm.getImages());
-        } else {
-            // Nếu không có image nào trong form, xóa hết images cũ
-            variant.getImages().clear();
-            variant.setVariantMainImageUrl(null);
         }
     }
 
@@ -275,27 +274,37 @@ public class ProductServiceImpl implements ProductService {
     private void updateVariantImages(ProductVariant variant, List<ProductImageForm> imageForms) {
         List<ProductImage> currentImages = variant.getImages();
 
-        // Tạo map để dễ lookup images hiện tại
+        // ✅ Nếu FE không gửi gì => giữ nguyên ảnh cũ
+        if (imageForms == null) {
+            return;
+        }
+
+        // Nếu FE gửi danh sách rỗng => nghĩa là muốn xóa hết ảnh
+        if (imageForms.isEmpty()) {
+            currentImages.clear();
+            variant.setVariantMainImageUrl(null);
+            return;
+        }
+
+        // Map để lookup ảnh hiện tại
         Map<Integer, ProductImage> currentImageMap = currentImages.stream()
                 .collect(Collectors.toMap(ProductImage::getId, img -> img));
 
-        // Danh sách image IDs từ form (để biết image nào cần giữ lại)
+        // Lấy danh sách id ảnh từ FE
         List<Integer> imageIdsInForm = imageForms.stream()
                 .map(ProductImageForm::getId)
-                .filter(id -> id != null)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
-        // Xóa các images không còn trong form
-        currentImages.removeIf(image ->
-                !imageIdsInForm.contains(image.getId()));
+        // Xóa ảnh nào không còn trong form
+        currentImages.removeIf(image -> image.getId() != null && !imageIdsInForm.contains(image.getId()));
 
         boolean hasMainImage = false;
-        List<ProductImage> newImages = new ArrayList<>();
 
-        // Xử lý từng image trong form
+        // Xử lý ảnh từ FE
         for (ProductImageForm imageForm : imageForms) {
             if (imageForm.getId() != null && currentImageMap.containsKey(imageForm.getId())) {
-                // Cập nhật image hiện có (chỉ cập nhật isMain, không upload lại file)
+                // Ảnh cũ: chỉ update isMain
                 ProductImage existingImage = currentImageMap.get(imageForm.getId());
                 existingImage.setIsMain(imageForm.getIsMain() != null ? imageForm.getIsMain() : false);
 
@@ -305,7 +314,7 @@ public class ProductServiceImpl implements ProductService {
                 }
 
             } else if (imageForm.getImageUrl() != null && !imageForm.getImageUrl().isEmpty()) {
-                // Thêm image mới (upload file mới)
+                // Ảnh mới: upload file
                 String savedPath = fileStorageService.storeFile(imageForm.getImageUrl(), "products");
 
                 ProductImage newImage = new ProductImage();
@@ -314,7 +323,6 @@ public class ProductServiceImpl implements ProductService {
                 newImage.setProductVariant(variant);
 
                 currentImages.add(newImage);
-                newImages.add(newImage);
 
                 if (newImage.getIsMain()) {
                     hasMainImage = true;
@@ -323,16 +331,14 @@ public class ProductServiceImpl implements ProductService {
             }
         }
 
-        // Nếu không có ảnh nào được đánh dấu main, lấy ảnh đầu tiên làm main
+        // Nếu không có ảnh main, chọn ảnh đầu tiên
         if (!hasMainImage && !currentImages.isEmpty()) {
             ProductImage firstImage = currentImages.get(0);
             firstImage.setIsMain(true);
             variant.setVariantMainImageUrl(firstImage.getImageUrl());
-        } else if (currentImages.isEmpty()) {
-            // Nếu không còn ảnh nào, xóa main image URL
-            variant.setVariantMainImageUrl(null);
         }
     }
+
     @Override
     public ProductResponse getProductById(Integer id) {
         Product product = productRepository.findById(id)
@@ -348,6 +354,9 @@ public class ProductServiceImpl implements ProductService {
         response.setPrice(product.getPrice());
         response.setDiscountPrice(product.getDiscountPrice());
         response.setInStock(product.getInStock());
+        response.setCreatedAt(product.getCreatedAt());
+        response.setUpdatedAt(product.getUpdatedAt());
+
 
         // Map Category
         CategoryResponse categoryResponse = new CategoryResponse();
@@ -407,5 +416,22 @@ public class ProductServiceImpl implements ProductService {
         Pageable pageable = PageRequest.of(filter.getPage(), filter.getSize());
         Page<Product> page = productRepository.findAll(specification, pageable);
         return page.map(product -> modelMapper.map(product, FilterProductResponse.class));
+    }
+
+    @Override
+    public List<ProductResponse> getProductsByCategory(Integer categoryId) {
+        List<Product> products = productRepository.findByCategoryId(categoryId);
+
+        return products.stream()
+                .map(ProductMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ProductResponse> getTop4NewestProducts() {
+        List<Product> products = productRepository.findTop4ByOrderByCreatedAtDesc();
+        return products.stream()
+                .map(ProductMapper::toResponse)
+                .toList();
     }
 }
